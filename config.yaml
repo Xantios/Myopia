@@ -1,0 +1,22 @@
+config:
+  debug: true
+hosts:
+  - item:
+      name: "jordan"
+      source: "http://jordan.in.hostfile"
+      destination: "http://jordan.sacredheart.it:5000"
+  - item:
+      name: "test"
+      source: "http://hacked.in.hostfile"
+      destination: "http://localhost:1337"
+  - item:
+      name: "bb-api"
+      source: "/bb-api"
+      destination: "https://www.breakingbadapi.com/api"
+  - item:
+      name: "bq-api"
+      source: "/bb-quotes"
+      destination: "https://breaking-bad-quotes.herokuapp.com/v1/quotes"
+assets:
+  - "/app:/var/www/"
+
