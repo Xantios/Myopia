@@ -1,4 +1,4 @@
-package main
+package router
 
 import (
 	"net/http"
@@ -6,15 +6,15 @@ import (
 	"net/url"
 )
 
-func RouteHost(req *http.Request,res http.ResponseWriter,route ConfigItem) {
+func RouteHost(req *http.Request,res http.ResponseWriter,route Route) {
 
-	destinationUrl,_ := url.Parse(route.destination)
+	destinationUrl,_ := url.Parse(route.Destination)
 	reverseProxy := httputil.NewSingleHostReverseProxy(destinationUrl)
 
 	// The request we are going to send to the server
 	reverseProxy.Director = func(req *http.Request) {
 
-		logger.Debug("Director")
+		// main.logger.Debug("Director")
 
 		// Be a good person, make sure X-Proxy headers are set correctly.
 		req.Header.Add("X-Forwarded-Host", req.Host)
@@ -25,16 +25,16 @@ func RouteHost(req *http.Request,res http.ResponseWriter,route ConfigItem) {
 
 	reverseProxy.ModifyResponse = func(resp *http.Response) error {
 
-		if runningConfig.debug {
+		// if debug {
 
-			logger.Debug("Response from host")
-			logger.Debug("\t"+resp.Proto+" "+resp.Status)
-			logger.Debug("")
+			//logger.Debug("Response from host")
+			//logger.Debug("\t"+resp.Proto+" "+resp.Status)
+			//logger.Debug("")
 
-			for key,_ := range resp.Header {
-				logger.Debug("\t"+key,":",resp.Header.Get(key))
-			}
-		}
+			//for key,_ := range resp.Header {
+				// logger.Debug("\t"+key,":",resp.Header.Get(key))
+			// }
+		//}
 
 		// No errors ! Let's go!
 		return error(nil)
