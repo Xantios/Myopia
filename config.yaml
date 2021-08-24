@@ -19,4 +19,6 @@ hosts:
       destination: "https://breaking-bad-quotes.herokuapp.com/v1/quotes"
 assets:
   - "/app:/var/www/"
+domains:
+  - sacredheart.it
 

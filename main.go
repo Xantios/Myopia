@@ -1,6 +1,7 @@
 package main
 
 import (
+	"example.com/xantios/tinyproxy/router"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
@@ -8,7 +9,7 @@ import (
 
 var runningConfig ExportConfig
 var logger *logrus.Entry
-var errorPage string
+// var errorPage string
 
 func main() {
 
@@ -24,16 +25,22 @@ func main() {
 		"service": "proxy",
 	})
 
+	// Setup router
+	router.Init()
+
+	// Setup additional hosts
+	for _,domain := range runningConfig.domains {
+		router.AddHost(domain)
+	}
+
 	if runningConfig.debug {
 		logger.Debug("Debug mode is enabled")
+		router.PrintRouteTable()
 	}
 
 	logger.Info("Server is starting on "+host)
 
-	// Preload pages
-	errorPage = LoadInternalAsset("./assets/error.page.html")
-
-	http.HandleFunc("/",GenericRequestHandler)
+	http.HandleFunc("/",router.GenericRequestHandler)
 
 	// Wrapped in logger.Fatal in case the listenAndServe call ever fails
 	logger.Fatal(http.ListenAndServe(host,nil))

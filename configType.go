@@ -1,9 +1,12 @@
 package main
 
+import "example.com/xantios/tinyproxy/router"
+
 type ConfigStruct struct {
 	Config GlobalConf  `yaml:"config"`
 	Hosts  []Hosts `yaml:"hosts"`
 	Assets []string `yaml:"assets"`
+	Domains []string `yaml:"domains"`
 }
 
 type GlobalConf struct {
@@ -24,7 +27,7 @@ type ConfigItem struct {
 	name string
 	source string
 	destination string
-	mapType RouteType
+	mapType router.RouteType
 	spliceCount int // So we can check partial URLs against each other
 }
 
@@ -32,6 +35,7 @@ type ExportConfig struct {
 	debug bool
 	hosts []ConfigItem
 	assets []AssetMap
+	domains []string
 }
 
 type AssetMap struct {

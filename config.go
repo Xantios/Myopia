@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"example.com/xantios/tinyproxy/router"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -37,37 +38,45 @@ func PrintConf(configStruct ConfigStruct) {
 }
 
 func getHosts(hostsConf []Hosts) []ConfigItem {
+
 	var hosts []ConfigItem
+
+	// Always add localhost
+	router.AddHost("localhost")
+
+	// First loop over to extract all hosts
 	for _,item := range hostsConf {
 
-		// Set MatchType
-		var matchType RouteType
+		// Check if hosts, if so add it to allowed hosts
+		matched, _ := regexp.Match("\\S{3,}://", []byte(item.Item.Source))
+		if matched {
+			router.AddHost(strings.SplitN(item.Item.Source, "/", 3)[2])
+		}
+	}
 
-		// Check for :// in URL
+	// Second loop, map actual paths
+	for _,item := range hostsConf {
+
+		//// Set MatchType
+		var matchType router.RouteType
+		//
+		//// Check for :// in URL
 		matched,_ := regexp.Match("\\S{3,}://",[]byte(item.Item.Source))
 
-		// Check amount of slashes in case paths overlap (eg: /api/myRequest/ should match /api/)
-		// spliceCount = (matched) : strings.Count(item.Item.Source,"/")-2 ? strings.Count(item.Item.Source,"/")
-		var spliceCount int
 		if matched {
-			spliceCount = strings.Count(item.Item.Source,"/")-2
+			matchType = router.MapHost
 		} else {
-			spliceCount = strings.Count(item.Item.Source,"/")
+			matchType = router.MapPath
 		}
 
-		if matched {
-			matchType = MapHost
-		} else {
-			matchType = MapPath
+		var route = router.Route{
+			Name: item.Item.Name,
+			Source: item.Item.Source,
+			Destination: item.Item.Destination,
+			MapType: matchType,
 		}
 
-		hosts = append(hosts, ConfigItem{
-			name: 		 item.Item.Name,
-			source:      item.Item.Source,
-			destination: item.Item.Destination,
-			mapType:     matchType,
-			spliceCount: spliceCount,
-		})
+		router.AddRoute(route)
 	}
 
 	return hosts
@@ -110,5 +119,6 @@ func GetConf(configPath string) ExportConfig {
 		debug: configContent.Config.Debug,
 		hosts: hosts,
 		assets: assets,
+		domains: configContent.Domains,
 	}
 }
