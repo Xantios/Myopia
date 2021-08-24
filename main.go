@@ -1,6 +1,7 @@
 package main
 
 import (
+	"example.com/xantios/tinyproxy/docker"
 	"example.com/xantios/tinyproxy/router"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -37,6 +38,10 @@ func main() {
 		logger.Debug("Debug mode is enabled")
 		router.PrintRouteTable()
 	}
+
+	// Subscribe to docker, throw it in a go routine and let it do its thing
+	docker.ContainerMapType("HOST","godev.sacredheart.it")
+	go docker.Subscribe("")
 
 	logger.Info("Server is starting on "+host)
 
