@@ -1,0 +1,16 @@
+config:
+  debug: true
+hosts:
+  - item:
+      name: "TestHost"
+      source: "http://exampe.com"
+      destination: "http://example.com/target"
+  - item:
+      name: "TestFolder"
+      source: "/example"
+      destination: "http://example.com/folder"
+assets:
+  - "/tests:/var/www/"
+domains:
+  - test.nl
+
