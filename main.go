@@ -6,6 +6,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 )
 
 var runningConfig ExportConfig
@@ -50,9 +52,31 @@ func main() {
 		router.PrintRouteTable()
 	}
 
-	// Subscribe to docker, throw it in a go routine and let it do its thing
+	// Set container mapping type
 	docker.ContainerMapType("HOST","godev.sacredheart.it")
-	go docker.Subscribe("")
+
+	// Subscribe to docker, convert to route and push to router
+	go docker.Subscribe("",func(hostItem docker.DynamicHost) {
+
+		var mapType router.RouteType
+		if strings.HasPrefix(hostItem.Url,"/") {
+			mapType = router.MapPath
+		} else {
+			mapType = router.MapHost
+		}
+
+
+		route := router.Route{
+			Name:        "Docker:"+hostItem.ContainerName,
+			Source:      hostItem.Url,
+			Destination: "http://"+hostItem.Ip+":"+ strconv.Itoa(hostItem.Port),
+			MapType:     mapType,
+		}
+
+		router.AddRoute(route)
+		logger.Warning("Updated route list")
+		router.PrintRouteTable()
+	})
 
 	logger.Info("Server is starting on "+host)
 

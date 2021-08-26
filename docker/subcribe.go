@@ -2,20 +2,33 @@ package docker
 
 import (
 	"context"
-	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/sirupsen/logrus"
+	"os"
+	"strconv"
+	"strings"
 )
 
+type DynamicHost struct {
+	ContainerName string
+	Url string
+	Port int
+	Ip string
+}
 
 // MapType can be HOST or SUBDIR
+// Make this compatible with RouteType from router
 var MapType = "HOST"
 var MapDomain = ""
 
-// Client
+// cli Docker Client Interface
 var cli *client.Client
+
+// DockerLog logrus instance
+var DockerLog *logrus.Entry
 
 func ContainerMapType(maptype string,domain string) {
 
@@ -28,11 +41,25 @@ func ContainerMapType(maptype string,domain string) {
 	panic("Container map type can be HOST or SUBDIR, invalid value supplied ("+maptype+")")
 }
 
-func Subscribe(socketPath string) {
+func GetMapType() string {
+	return MapType
+}
+
+type CallbackFunction func(host DynamicHost)
+
+func Subscribe(socketPath string,callback CallbackFunction) {
 
 	if socketPath == "" {
 		socketPath = "unix:///var/run/docker.sock"
 	}
+
+	// Setup logging
+	logrus.SetFormatter(&logrus.TextFormatter{})
+	logrus.SetOutput(os.Stdout)
+	logrus.SetLevel(logrus.DebugLevel)
+	DockerLog = logrus.WithFields(logrus.Fields{
+		"service": "Docker",
+	})
 
 	var err error
 	cli,err = client.NewClientWithOpts(client.WithHost(socketPath),client.FromEnv)
@@ -54,42 +81,92 @@ func Subscribe(socketPath string) {
 				println("Error: "+err.Error())
 			case messageChannel := <-messageChannel:
 
-				println("Type beat:"+messageChannel.Action)
+				// println("Type beat:"+messageChannel.Action)
 
 				if messageChannel.Action == "die" {
 					removeContainerFromProxy(messageChannel)
 				}
 
 				if messageChannel.Action == "start" {
-					addContainerToProxy(messageChannel)
+					addContainerToProxy(messageChannel,callback)
 				}
 		}
 	}
 }
 
-func addContainerToProxy(msg events.Message) {
+// addContainerToProxy Check if a label myopia.host exists
+/*
 
-	println("Starting inspect on #"+msg.Actor.ID)
+	check if value of label syntax matches:
+	/somePath or vhost.tld
+
+	First port is assumed if not defined in value
+	set port by using:
+	/somePath:1337 or vhost.tld:1337
+*/
+func addContainerToProxy(msg events.Message,callback CallbackFunction) {
+
+	DockerLog.Info("Starting inspect on #"+msg.Actor.ID)
 	container,err := cli.ContainerInspect(context.Background(),msg.Actor.ID)
-
-	fmt.Printf("%#v\n",container.Config.Env)
 
 	if err != nil {
 		println("Error while inspecting container: "+err.Error())
 		return
 	}
 
+	DockerLog.Info("Inspecting container: "+strings.TrimPrefix(container.Name,"/"))
 
+	for key,value := range container.Config.Labels {
+		// DockerLog.Debug("Label "+key," => "+value)
 
-	/*for key,value := range msg.Actor.Attributes {
-		if key == "name" {
-			println("Tering zei Nijntje, een nieuwe container genaamd: "+value)
+		if key == "myopia.host" {
+			dynamicHost := parseHostString(value,container)
+			callback(dynamicHost)
 		}
-	}*/
+	}
 
-	fmt.Printf("%#v\n",msg)
+	// No match
+	return
 }
 
 func removeContainerFromProxy(msg events.Message) {
-	fmt.Printf("%#v\n",msg)
+	DockerLog.Info("Container removed #"+msg.Actor.ID)
+	// fmt.Printf("%#v\n",msg)
+}
+
+func parseHostString(value string,container types.ContainerJSON) DynamicHost {
+
+	var url string
+	var port int = 0
+
+	// Extract ports
+	var ports []int
+	for k,_ := range container.NetworkSettings.NetworkSettingsBase.Ports {
+		prefix := strings.SplitN(string(k),"/",2)[0]
+		port,_ = strconv.Atoi(prefix)
+		ports = append(ports, port)
+	}
+
+	// Prefix protocol
+	var prefix = ""
+	if !strings.HasPrefix(value,"/") {
+		prefix = "http://"
+	}
+
+	if strings.Contains(value,":") {
+		split := strings.SplitN(value,":",2)
+		url = split[1]
+		tmp, _ := strconv.ParseInt(split[2],10,4)
+		port = int(tmp)
+	} else {
+		url = value
+		port = ports[0]
+	}
+
+	return DynamicHost{
+		ContainerName: strings.TrimPrefix(container.Name,"/"),
+		Url: prefix+url,
+		Port: port,
+		Ip: container.NetworkSettings.DefaultNetworkSettings.IPAddress,
+	}
 }

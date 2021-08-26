@@ -34,7 +34,7 @@ build_dev:
 
 run_dev:
 	@echo "\n==> Port gets mapped to 8100:42069\n"
-	docker run --name tinyproxy --rm -v $(CURDIR):/usr/src/app -w /usr/src/app -p 8100:42069 tiny_proxy:latest ./bin/tinyproxy_dev
+	docker run --name tinyproxy --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(CURDIR):/usr/src/app -w /usr/src/app -p 8100:42069 tiny_proxy:latest ./bin/tinyproxy_dev
 
 watch_dev:
 	@echo "\n==> Port gets mapped to 8100:42069\n"
