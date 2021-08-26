@@ -29,6 +29,17 @@ func main() {
 	// Setup router
 	router.Init()
 
+	// Map asset paths
+	for _,assets := range runningConfig.assets {
+
+		// URL Sorting in Go is a bit odd. let's amend a slash to the path so the handler knows it's a path
+		urlPath := assets.Url+"/"
+
+		fs := http.FileServer(http.Dir(assets.Path))
+		handler := http.StripPrefix(urlPath,fs)
+		http.Handle(urlPath,handler)
+	}
+
 	// Setup additional hosts
 	for _,domain := range runningConfig.domains {
 		router.AddHost(domain)
