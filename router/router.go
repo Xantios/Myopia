@@ -135,42 +135,6 @@ func GetRoute(req *http.Request) Route {
 	return defaultRoute
 }
 
-func GetRouteType(req *http.Request) (RouteType, Route) {
-
-	// urlPath := strings.TrimSuffix(req.URL.Path,"/")
-	// host := strings.SplitN(req.Host,":",2)[0]
-	// port := strings.SplitN(req.Host,":",2)[1]
-
-	/*if runningConfig.debug {
-		logger.Debug("Started routing for http(s)://"+host + ":" + port + urlPath+"?"+req.URL.RawQuery)
-	}*/
-
-	// Check if host or path
-	/*for _,item := range runningConfig.hosts {
-
-		// Host To Host mapping must have a protocol :// defined
-		if item.source == "http://"+host {
-			return MapHost,item
-		}
-
-		if strings.HasPrefix(urlPath,item.source) {
-			return MapPath,item
-		} else {
-			println(item.source," does not start with ",urlPath)
-		}
-	}
-
-	// Check local asset
-	for _,item := range runningConfig.assets {
-		if strings.Contains(item.url,urlPath) {
-			return MapAsset,defaultRoute
-		}
-	}*/
-
-	// logger.Warning("Cant map a route for "+urlPath)
-	return MapHost,defaultRoute
-}
-
 func ServeStatic(req *http.Request,res http.ResponseWriter,route Route) {
 	//
 }
