@@ -107,7 +107,7 @@ func GetRoute(req *http.Request) Route {
 	// Check if allowed host
 	var allowedHost = false
 	for _,hostEntry := range hosts {
-		if host == hostEntry {
+		if  strings.HasSuffix(host,hostEntry) {
 			allowedHost = true
 		}
 	}
