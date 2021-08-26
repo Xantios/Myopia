@@ -39,6 +39,6 @@ type ExportConfig struct {
 }
 
 type AssetMap struct {
-	url string
-	path string
+	Url string
+	Path string
 }

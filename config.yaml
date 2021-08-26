@@ -18,7 +18,7 @@ hosts:
       source: "/bb-quotes"
       destination: "https://breaking-bad-quotes.herokuapp.com/v1/quotes"
 assets:
-  - "/app:/var/www/"
+  # - "/app:/Users/xantios/go/TinyProxy/assets/web"
+  - "/app:./assets/web"
 domains:
   - sacredheart.it
-

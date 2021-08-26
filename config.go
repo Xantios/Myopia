@@ -87,8 +87,8 @@ func getAssets(assetsConf []string) []AssetMap {
 	for _,item := range assetsConf {
 		seperatedItem := strings.SplitN(item,":",2)
 		assets = append(assets, AssetMap{
-			url: seperatedItem[0],
-			path: seperatedItem[1],
+			Url: seperatedItem[0],
+			Path: seperatedItem[1],
 		})
 	}
 
