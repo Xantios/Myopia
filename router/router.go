@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
-	"io/ioutil"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"strings"
@@ -18,11 +18,26 @@ var currentRoute Route
 var hosts []string
 var routes []Route
 
+// RouterLog routign specific logging
+var RouterLog *logrus.Entry
+var debug bool
+
 func Init() {
+
+	// Setup logging
+	logrus.SetFormatter(&logrus.TextFormatter{})
+	logrus.SetOutput(os.Stdout)
+	logrus.SetLevel(logrus.DebugLevel)
+	RouterLog = logrus.WithFields(logrus.Fields{
+		"service": "Router",
+	})
+
 	errorPage = LoadInternalAsset("./assets/error.page.html")
 	welcomePage = LoadInternalAsset("./assets/index.page.html")
+}
 
-	// Maybe set logger here to?
+func SetDebug(debugValue bool) {
+	debug = debugValue
 }
 
 func AddRoute(route Route) {
@@ -69,8 +84,6 @@ func PrintRouteTable() {
 
 func GenericErrorHandler(resp http.ResponseWriter,r *http.Request,err error) {
 
-	println("Something something, Error handler")
-
 	var page = make([]byte,len(errorPage))
 	copy(page,errorPage)
 
@@ -83,34 +96,34 @@ func GenericErrorHandler(resp http.ResponseWriter,r *http.Request,err error) {
 	resp.Write(page)
 }
 
-func WelcomePage(resp http.ResponseWriter,r *http.Request) {
-
-	var page = make([]byte,len(welcomePage))
-	copy(page,welcomePage)
-
-	page = bytes.ReplaceAll(page,[]byte("{{MYOPIA_VERSION}}"),[]byte("Myopia V0.1"))
-
-	resp.Write(page)
-}
-
 func GenericRequestHandler(res http.ResponseWriter,req *http.Request) {
 
 	currentRoute = GetRoute(req)
 
 	switch {
 		case currentRoute.MapType == MapHost:
+
+			if debug {
+				RouterLog.Info("Using Host router")
+			}
+
 			RouteHost(req,res,currentRoute)
-		case currentRoute.MapType == MapAsset:
-			ServeStatic(req,res,currentRoute)
+
 		case currentRoute.MapType == MapPath:
+
+			if debug {
+				RouterLog.Info("Using Path router")
+			}
+
 			RoutePath(req,res,currentRoute)
 	}
 }
 
 func LoadInternalAsset(file string) string {
-	dat,err := ioutil.ReadFile(file)
+	dat,err := os.ReadFile(file)
 	if err != nil {
-		// logger.Panicln(err)
+		RouterLog.Warning("Cant load internal asset ["+file+"]")
+		return ""
 	}
 
 	return string(dat)
@@ -153,8 +166,4 @@ func GetRoute(req *http.Request) Route {
 	}
 
 	return defaultRoute
-}
-
-func ServeStatic(req *http.Request,res http.ResponseWriter,route Route) {
-	//
 }
