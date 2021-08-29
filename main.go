@@ -14,6 +14,33 @@ var runningConfig ExportConfig
 var logger *logrus.Entry
 // var errorPage string
 
+func addContainerRoute(hostItem docker.DynamicHost) {
+
+	var mapType router.RouteType
+	if strings.HasPrefix(hostItem.Url,"/") {
+		mapType = router.MapPath
+	} else {
+		mapType = router.MapHost
+	}
+
+	route := router.Route{
+		Name:        "Docker:"+hostItem.ContainerName,
+		Source:      hostItem.Url,
+		Destination: "http://"+hostItem.Ip+":"+ strconv.Itoa(hostItem.Port),
+		MapType:     mapType,
+	}
+
+	router.AddRoute(route)
+	logger.Warning("Updated route list")
+	router.PrintRouteTable()
+}
+
+func removeContainerRoute(name string) {
+	println("Removing route: "+name)
+	router.RemoveRoute("Docker:"+name)
+	router.PrintRouteTable()
+}
+
 func main() {
 
 	// Pull config
@@ -56,27 +83,11 @@ func main() {
 	docker.ContainerMapType("HOST","godev.sacredheart.it")
 
 	// Subscribe to docker, convert to route and push to router
-	go docker.Subscribe("",func(hostItem docker.DynamicHost) {
-
-		var mapType router.RouteType
-		if strings.HasPrefix(hostItem.Url,"/") {
-			mapType = router.MapPath
-		} else {
-			mapType = router.MapHost
-		}
-
-
-		route := router.Route{
-			Name:        "Docker:"+hostItem.ContainerName,
-			Source:      hostItem.Url,
-			Destination: "http://"+hostItem.Ip+":"+ strconv.Itoa(hostItem.Port),
-			MapType:     mapType,
-		}
-
-		router.AddRoute(route)
-		logger.Warning("Updated route list")
-		router.PrintRouteTable()
-	})
+	go docker.Subscribe(
+		"",
+		addContainerRoute,
+		removeContainerRoute,
+	)
 
 	logger.Info("Server is starting on "+host)
 

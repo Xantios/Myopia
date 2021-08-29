@@ -45,9 +45,10 @@ func GetMapType() string {
 	return MapType
 }
 
-type CallbackFunction func(host DynamicHost)
+type CreateCallbackFunction func(host DynamicHost)
+type RemoveCallbackFunction func(name string)
 
-func Subscribe(socketPath string,callback CallbackFunction) {
+func Subscribe(socketPath string,create CreateCallbackFunction,remove RemoveCallbackFunction) {
 
 	if socketPath == "" {
 		socketPath = "unix:///var/run/docker.sock"
@@ -84,11 +85,11 @@ func Subscribe(socketPath string,callback CallbackFunction) {
 				// println("Type beat:"+messageChannel.Action)
 
 				if messageChannel.Action == "die" {
-					removeContainerFromProxy(messageChannel)
+					removeContainerFromProxy(messageChannel,remove)
 				}
 
 				if messageChannel.Action == "start" {
-					addContainerToProxy(messageChannel,callback)
+					addContainerToProxy(messageChannel,create)
 				}
 		}
 	}
@@ -104,7 +105,7 @@ func Subscribe(socketPath string,callback CallbackFunction) {
 	set port by using:
 	/somePath:1337 or vhost.tld:1337
 */
-func addContainerToProxy(msg events.Message,callback CallbackFunction) {
+func addContainerToProxy(msg events.Message,callback CreateCallbackFunction) {
 
 	DockerLog.Info("Starting inspect on #"+msg.Actor.ID)
 	container,err := cli.ContainerInspect(context.Background(),msg.Actor.ID)
@@ -129,9 +130,18 @@ func addContainerToProxy(msg events.Message,callback CallbackFunction) {
 	return
 }
 
-func removeContainerFromProxy(msg events.Message) {
+func removeContainerFromProxy(msg events.Message,callback RemoveCallbackFunction) {
+
 	DockerLog.Info("Container removed #"+msg.Actor.ID)
-	// fmt.Printf("%#v\n",msg)
+	name := ""
+
+	for k,v := range msg.Actor.Attributes {
+		if k == "name" {
+			name = v
+		}
+	}
+
+	callback(name)
 }
 
 func parseHostString(value string,container types.ContainerJSON) DynamicHost {
