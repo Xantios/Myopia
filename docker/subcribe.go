@@ -66,7 +66,18 @@ func Subscribe(socketPath string,create CreateCallbackFunction,remove RemoveCall
 	cli,err = client.NewClientWithOpts(client.WithHost(socketPath),client.FromEnv)
 
 	if err != nil {
-		panic(err)
+		DockerLog.Error("Cant connect to Docker. Make sure Docker is running")
+		return
+		// panic(err)
+	}
+
+	pong,err := cli.Ping(context.Background())
+	if
+		err != nil ||
+		pong.APIVersion == "" ||
+		pong.OSType == "" {
+			DockerLog.Error("Cant connect to Docker subsystem, Make sure Docker is running")
+			return
 	}
 
 	filter := filters.NewArgs()
@@ -81,8 +92,6 @@ func Subscribe(socketPath string,create CreateCallbackFunction,remove RemoveCall
 			case err := <-errorChannel:
 				println("Error: "+err.Error())
 			case messageChannel := <-messageChannel:
-
-				// println("Type beat:"+messageChannel.Action)
 
 				if messageChannel.Action == "die" {
 					removeContainerFromProxy(messageChannel,remove)
