@@ -29,6 +29,26 @@ func AddRoute(route Route) {
 	routes = append(routes, route)
 }
 
+func RemoveRoute(name string) {
+
+	// Convert name to index
+	matchIndex := -1
+	for index,route := range routes {
+		if route.Name == name {
+			matchIndex = index
+		}
+	}
+
+	if matchIndex == -1 {
+		println("No such route "+name)
+		return
+	}
+
+	// Move to bottom, slice of last item
+	routes[matchIndex] = routes[len(routes)-1]
+	routes = routes[:len(routes)-1]
+}
+
 func AddHost(host string) {
 	hosts = append(hosts, host)
 }
