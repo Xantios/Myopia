@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"example.com/xantios/tinyproxy/router"
-	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
@@ -30,11 +28,6 @@ func pullConfigFile(configPath string) []byte {
 	}
 
 	return data
-}
-
-func PrintConf(configStruct ConfigStruct) {
-	s, _ := json.MarshalIndent(configStruct, "", "\t");
-	fmt.Print(string(s))
 }
 
 func getHosts(hostsConf []Hosts) []ConfigItem {

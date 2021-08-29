@@ -78,7 +78,8 @@ func main() {
 		router.AddHost(domain)
 	}
 
-	if runningConfig.debug {
+	// Print initial route table
+	if debug {
 		logger.Debug("Debug mode is enabled")
 		router.PrintRouteTable()
 	}
