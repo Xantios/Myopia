@@ -12,7 +12,7 @@ import (
 
 var runningConfig ExportConfig
 var logger *logrus.Entry
-// var errorPage string
+var debug bool
 
 func addContainerRoute(hostItem docker.DynamicHost) {
 
@@ -55,8 +55,12 @@ func main() {
 		"service": "proxy",
 	})
 
+	// Set debug flag explicit
+	debug = runningConfig.debug
+
 	// Setup router
 	router.Init()
+	router.SetDebug(debug)
 
 	// Map asset paths
 	for _,assets := range runningConfig.assets {
