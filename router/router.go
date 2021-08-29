@@ -132,6 +132,12 @@ func LoadInternalAsset(file string) string {
 func GetRoute(req *http.Request) Route {
 
 	urlPath := strings.TrimSuffix(req.URL.Path,"/")
+
+	// Make sure port is always defined
+	if !strings.Contains(req.Host,":") {
+		req.Host = req.Host+":80"
+	}
+
 	host := strings.SplitN(req.Host,":",2)[0]
 	port := strings.SplitN(req.Host,":",2)[1]
 
