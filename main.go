@@ -155,19 +155,8 @@ func main() {
 		if err := server.ListenAndServeTLS("", ""); err != nil {
 			fmt.Println(err)
 		}
-	} else { // Non secure version
+	} else { // Unsecure version (plain HTTP)
 		http.HandleFunc("/",router.GenericRequestHandler)
 		http.ListenAndServe(":80", nil)
 	}
-
-	// server.ListenAndServeTLS("","")
-	// http.HandleFunc("/",router.GenericRequestHandler)
-	// certManager.HTTPHandler(nil)
-	// http.ListenAndServe(":80",nil)
-
-	// logger.Info("Server is starting on "+host)
-	// http.HandleFunc("/",router.GenericRequestHandler)
-
-	// Wrapped in logger.Fatal in case the listenAndServe call ever fails
-	// logger.Fatal(http.ListenAndServe(host,nil))
 }
