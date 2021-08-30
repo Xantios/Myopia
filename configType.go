@@ -11,6 +11,8 @@ type ConfigStruct struct {
 
 type GlobalConf struct {
 	Debug bool `yaml:"debug"`
+	Docker bool `yaml:"docker"`
+	Secure bool `yaml:"secure"`
 }
 
 type Item struct {
@@ -33,6 +35,8 @@ type ConfigItem struct {
 
 type ExportConfig struct {
 	debug bool
+	docker bool
+	secure bool
 	hosts []ConfigItem
 	assets []AssetMap
 	domains []string

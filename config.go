@@ -110,6 +110,8 @@ func GetConf(configPath string) ExportConfig {
 	// PrintConf(configContent)
 	return ExportConfig{
 		debug: configContent.Config.Debug,
+		docker: configContent.Config.Docker,
+		secure: configContent.Config.Secure,
 		hosts: hosts,
 		assets: assets,
 		domains: configContent.Domains,
