@@ -15,6 +15,7 @@ func RouteHost(req *http.Request,res http.ResponseWriter,route Route) {
 	reverseProxy.Director = func(req *http.Request) {
 
 		// destinationUrl.Host
+		compoundPath := destinationUrl.Path+req.URL.Path
 
 		// Be a good person, make sure X-Proxy headers are set correctly.
 		req.Header.Add("X-Forwarded-Host", req.Host)
@@ -22,6 +23,7 @@ func RouteHost(req *http.Request,res http.ResponseWriter,route Route) {
 		req.URL.Scheme = destinationUrl.Scheme
 		req.URL.Host = destinationUrl.Host
 		req.Host = destinationUrl.Host
+		req.URL.Path = compoundPath
 
 		if debug {
 			LogRequest(req)
