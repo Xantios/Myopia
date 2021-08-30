@@ -14,10 +14,10 @@ func LogResponse(resp *http.Response) {
 
 func LogRequest(req *http.Request) {
 	RouterLog.Debug("Request to host ["+req.Host+"]")
-	RouterLog.Debug(req.Method+" "+req.RequestURI+" "+req.Proto)
+	RouterLog.Debug("\t"+req.Method+" "+req.RequestURI+" "+req.Proto)
 	RouterLog.Debug("Host: "+req.Host)
 
 	for key,value := range req.Header {
-		RouterLog.Debug(key+": "+value[0])
+		RouterLog.Debug("\t"+key+": "+value[0])
 	}
 }
