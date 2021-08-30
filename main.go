@@ -1,17 +1,32 @@
 package main
 
 import (
+	"crypto/tls"
 	"example.com/xantios/tinyproxy/docker"
 	"example.com/xantios/tinyproxy/router"
+	"fmt"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/acme/autocert"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
 
+/*
+	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    	-keyout certs/dev.local.io.key -out certs/dev.local.io.crt \
+    	-subj "/C=NL/ST=Limburg/L=Geleen/O=Marco Franssen/OU=Development/CN=dev.local.io/emailAddress=marco.franssen@gmail.com"
+
+	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    	-keyout certs/localhost.key -out certs/localhost.crt \
+    	-subj "/C=NL/ST=Limburg/L=Geleen/O=Marco Franssen/OU=Development/CN=localhost/emailAddress=marco.franssen@gmail.com"
+ */
+
 var runningConfig ExportConfig
 var logger *logrus.Entry
+
 var debug bool
 
 func addContainerRoute(hostItem docker.DynamicHost) {
@@ -41,11 +56,29 @@ func removeContainerRoute(name string) {
 	router.PrintRouteTable()
 }
 
+func getCertificate(certManager *autocert.Manager) func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+	return func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+		dirCache, ok := certManager.Cache.(autocert.DirCache)
+		if !ok {
+			dirCache = "certs"
+		}
+
+		keyFile := filepath.Join(string(dirCache), hello.ServerName+".key")
+		crtFile := filepath.Join(string(dirCache), hello.ServerName+".crt")
+		certificate, err := tls.LoadX509KeyPair(crtFile, keyFile)
+		if err != nil {
+			fmt.Printf("%s\nFalling back to Letsencrypt\n", err)
+			return certManager.GetCertificate(hello)
+		}
+		fmt.Println("Loaded selfsigned certificate.")
+		return &certificate, err
+	}
+}
+
 func main() {
 
 	// Pull config
 	runningConfig = GetConf("config.yaml")
-	host := env("host","0.0.0.0")+":"+env("port","42069")
 
 	// Setup logging
 	logrus.SetFormatter(&logrus.TextFormatter{})
@@ -84,20 +117,57 @@ func main() {
 		router.PrintRouteTable()
 	}
 
-	// Set container mapping type
-	docker.ContainerMapType("HOST","godev.sacredheart.it")
+	if runningConfig.docker {
+		// Set container mapping type
+		docker.ContainerMapType("HOST","godev.sacredheart.it")
 
-	// Subscribe to docker, convert to route and push to router
-	go docker.Subscribe(
-		"",
-		addContainerRoute,
-		removeContainerRoute,
-	)
+		// Subscribe to docker, convert to route and push to router
+		go docker.Subscribe(
+			"",
+			addContainerRoute,
+			removeContainerRoute,
+		)
+	}
 
-	logger.Info("Server is starting on "+host)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/",router.GenericRequestHandler)
 
-	http.HandleFunc("/",router.GenericRequestHandler)
+	if runningConfig.secure {
+
+		certManager := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist("webnerd.nl","stuff.tld","dev.webnerd.nl"), // Add allowList here
+
+			Cache:      autocert.DirCache("certs"),
+		}
+
+		tlsConfig := certManager.TLSConfig()
+		tlsConfig.GetCertificate = getCertificate(&certManager)
+
+		server := http.Server{
+			Addr:    ":443",
+			Handler: mux,
+			TLSConfig: tlsConfig,
+		}
+
+		go http.ListenAndServe(":80", certManager.HTTPHandler(nil))
+		fmt.Println("Server listening on", server.Addr)
+		if err := server.ListenAndServeTLS("", ""); err != nil {
+			fmt.Println(err)
+		}
+	} else { // Non secure version
+		http.HandleFunc("/",router.GenericRequestHandler)
+		http.ListenAndServe(":80", nil)
+	}
+
+	// server.ListenAndServeTLS("","")
+	// http.HandleFunc("/",router.GenericRequestHandler)
+	// certManager.HTTPHandler(nil)
+	// http.ListenAndServe(":80",nil)
+
+	// logger.Info("Server is starting on "+host)
+	// http.HandleFunc("/",router.GenericRequestHandler)
 
 	// Wrapped in logger.Fatal in case the listenAndServe call ever fails
-	logger.Fatal(http.ListenAndServe(host,nil))
+	// logger.Fatal(http.ListenAndServe(host,nil))
 }
