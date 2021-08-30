@@ -1,5 +1,7 @@
 config:
   debug: true
+  docker: true
+  secure: true
 hosts:
   - item:
       name: "jordan"
@@ -8,7 +10,7 @@ hosts:
   - item:
       name: "test"
       source: "http://hacked.in.hostfile"
-      destination: "http://localhost:1337"
+      destination: "https://www.breakingbadapi.com/api"
   - item:
       name: "bb-api"
       source: "/bb-api"
