@@ -17,11 +17,11 @@ import (
 /*
 	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     	-keyout certs/dev.local.io.key -out certs/dev.local.io.crt \
-    	-subj "/C=NL/ST=Limburg/L=Geleen/O=Marco Franssen/OU=Development/CN=dev.local.io/emailAddress=marco.franssen@gmail.com"
+    	-subj "/C=NL/ST=a/L=a/O=name/OU=Development/CN=dev.local/emailAddress=bugmenot@example.com"
 
 	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     	-keyout certs/localhost.key -out certs/localhost.crt \
-    	-subj "/C=NL/ST=Limburg/L=Geleen/O=Marco Franssen/OU=Development/CN=localhost/emailAddress=marco.franssen@gmail.com"
+    	-subj "/C=NL/ST=a/L=a/O=name/OU=Development/CN=dev.local/emailAddress=bugmenot@example.com"
  */
 
 var runningConfig ExportConfig
