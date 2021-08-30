@@ -1,6 +1,6 @@
 package main
 
-import "example.com/xantios/tinyproxy/router"
+import "example.com/xantios/myopia/router"
 
 type ConfigStruct struct {
 	Config GlobalConf  `yaml:"config"`

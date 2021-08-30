@@ -1,7 +1,7 @@
 package main
 
 import (
-	"example.com/xantios/tinyproxy/router"
+	"example.com/xantios/myopia/router"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"

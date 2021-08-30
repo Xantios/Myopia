@@ -2,8 +2,8 @@ package main
 
 import (
 	"crypto/tls"
-	"example.com/xantios/tinyproxy/docker"
-	"example.com/xantios/tinyproxy/router"
+	"example.com/xantios/myopia/docker"
+	"example.com/xantios/myopia/router"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/acme/autocert"

@@ -1,4 +1,4 @@
-module example.com/xantios/tinyproxy
+module example.com/xantios/myopia
 
 go 1.16
 
