@@ -42,3 +42,6 @@ Local files (also called assets or artifacts) can be server out. make sure paths
 ## Domains
 By design localhost is always allowed. all items found in the hosts array are added to this allow list to.
 you can add more domains to this list by adding them in this list
+
+## Running
+make run
