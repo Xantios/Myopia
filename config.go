@@ -30,9 +30,9 @@ func pullConfigFile(configPath string) []byte {
 	return data
 }
 
-func getHosts(hostsConf []Hosts) []ConfigItem {
+func getHosts(hostsConf []Hosts) []router.Route {
 
-	var hosts []ConfigItem
+	var hosts []router.Route
 
 	// Always add localhost
 	router.AddHost("localhost")
@@ -70,6 +70,7 @@ func getHosts(hostsConf []Hosts) []ConfigItem {
 		}
 
 		router.AddRoute(route)
+		hosts = append(hosts, route)
 	}
 
 	return hosts

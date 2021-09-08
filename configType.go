@@ -30,14 +30,13 @@ type ConfigItem struct {
 	source string
 	destination string
 	mapType router.RouteType
-	spliceCount int // So we can check partial URLs against each other
 }
 
 type ExportConfig struct {
 	debug bool
 	docker bool
 	secure bool
-	hosts []ConfigItem
+	hosts []router.Route
 	assets []AssetMap
 	domains []string
 }
