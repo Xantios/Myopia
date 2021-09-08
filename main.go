@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	// "example.com/xantios/myopia/api"
 	"example.com/xantios/myopia/docker"
 	"example.com/xantios/myopia/router"
 	"fmt"
@@ -12,6 +13,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	// _ "example.com/xantios/myopia/docs" // Reasons
 )
 
 /*
@@ -129,14 +132,28 @@ func main() {
 		)
 	}
 
+	// Move this to config
+	// enableApi := true
+	// apiListen := "0.0.0.0:8080"
+
+	//if enableApi {
+	//	api.Main(apiListen)
+	//}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/",router.GenericRequestHandler)
 
 	if runningConfig.secure {
 
+		var hostwhitelist []string
+		for _,item := range runningConfig.hosts {
+			hostwhitelist = append(hostwhitelist, item.source)
+			println("ssl host:",item.source)
+		}
+
 		certManager := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist("webnerd.nl","stuff.tld","dev.webnerd.nl"), // Add allowList here
+			HostPolicy: autocert.HostWhitelist(hostwhitelist...), // Add allowList here
 
 			Cache:      autocert.DirCache("certs"),
 		}
