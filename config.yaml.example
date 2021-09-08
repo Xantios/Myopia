@@ -1,0 +1,26 @@
+config:
+  debug: true
+  docker: true
+  secure: true
+hosts:
+  - item:
+      name: "jordan"
+      source: "http://jordan.in.hostfile"
+      destination: "http://jordan.sacredheart.it:5000"
+  - item:
+      name: "test"
+      source: "http://hacked.in.hostfile"
+      destination: "https://www.breakingbadapi.com/api"
+  - item:
+      name: "bb-api"
+      source: "/bb-api"
+      destination: "https://www.breakingbadapi.com/api"
+  - item:
+      name: "bq-api"
+      source: "/bb-quotes"
+      destination: "https://breaking-bad-quotes.herokuapp.com/v1/quotes"
+assets:
+  # - "/app:/Users/xantios/go/TinyProxy/assets/web"
+  - "/app:./assets/web"
+domains:
+  - sacredheart.it
