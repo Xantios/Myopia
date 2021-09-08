@@ -37,7 +37,7 @@ run_dev:
 	@echo "\n==> Port gets mapped to 8100:42069\n"
 	docker run --name myopia --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(CURDIR):/usr/src/app -w /usr/src/app -p 8100:42069 myopia:latest ./bin/myopia_dev
 
-run: build_dev
+run: container build_dev
 	docker run --name myopia --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(CURDIR):/usr/src/app -w /usr/src/app -p 80:80 -p 443:443 myopia:latest ./bin/myopia_dev
 
 watch_dev:
