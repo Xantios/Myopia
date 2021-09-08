@@ -2,6 +2,8 @@ package main
 
 import (
 	"crypto/tls"
+	"net/url"
+
 	// "example.com/xantios/myopia/api"
 	"example.com/xantios/myopia/docker"
 	"example.com/xantios/myopia/router"
@@ -146,9 +148,14 @@ func main() {
 	if runningConfig.secure {
 
 		var hostwhitelist []string
+		fmt.Printf("%#v",runningConfig.hosts)
 		for _,item := range runningConfig.hosts {
-			hostwhitelist = append(hostwhitelist, item.source)
-			println("ssl host:",item.source)
+
+			if strings.HasPrefix(item.Source,"http://") {
+				urlMap,_ := url.Parse(item.Source)
+				hostwhitelist = append(hostwhitelist, urlMap.Host)
+				println("ssl host: ",item.Source)
+			}
 		}
 
 		certManager := autocert.Manager{
