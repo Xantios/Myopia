@@ -1,5 +1,5 @@
 default:
-	@echo "Please provide a command"
+	docker run --name myopia --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(CURDIR):/usr/src/app -w /usr/src/app -p 80:80 -p 443:443 myopia:latest ./bin/myopia
 
 love:
 	@echo "not war(craft)"
@@ -43,6 +43,9 @@ run: container build_dev
 watch_dev:
 	@echo "\n==> Port gets mapped to 8100:42069\n"
 	docker run --name myopia --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(CURDIR):/usr/src/app -w /usr/src/app -p 8100:42069 myopia:latest watcher
+
+local:
+	go build -o ./bin/myopia
 
 dev: build_dev run_dev
 watch: watch_dev
